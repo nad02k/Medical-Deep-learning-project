@@ -1,0 +1,11 @@
+pandas>=2.0
+numpy>=1.26
+pillow>=10.0
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+pandera>=0.24
+prefect>=3.0
+kagglehub>=0.3
+dvc>=3.0
+python-dotenv>=1.0
+requests>=2.31
