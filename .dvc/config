@@ -1,0 +1,6 @@
+[core]
+    analytics = false
+    check_update = false
+    remote = local_storage
+['remote "local_storage"']
+    url = data/dvc_storage

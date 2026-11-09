@@ -12,9 +12,11 @@ import sys
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "check":
-        from src import db
-        print(json.dumps(db.post_checks(), indent=2))
-        print(json.dumps(db.post_checks_ehr(), indent=2))
+        from src import db, config
+        res = {"post_checks": db.post_checks(), "post_checks_ehr": db.post_checks_ehr()}
+        print(json.dumps(res, indent=2))
+        config.REPORTS.mkdir(exist_ok=True)
+        (config.REPORTS / "checks_latest.json").write_text(json.dumps(res, indent=2, default=str), encoding="utf-8")
         return
     from flows import pipeline as p
     runs = {"mimic": p.ingest_mimic_demo, "nih": p.ingest_nih, "pneumonia": p.ingest_pneumonia}

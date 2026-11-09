@@ -1,0 +1,60 @@
+schema: '2.0'
+stages:
+  validate-quality:
+    cmd: python run_tests.py
+    deps:
+    - path: configs/params.yaml
+      hash: md5
+      md5: 21d80b95ef684473ca685c08ba968ff7
+      size: 3659
+    - path: src/config.py
+      hash: md5
+      md5: b60978843b3d2bd7b5e796f401ddc1ae
+      size: 2047
+    - path: src/transform.py
+      hash: md5
+      md5: 7f78d1ef8a3761ea5aa1490fa9736887
+      size: 4674
+    - path: src/validate.py
+      hash: md5
+      md5: 1f5a0128f29703919e197f6b610031d9
+      size: 5021
+    - path: tests/test_data_quality.py
+      hash: md5
+      md5: 0ed20a5a4abdef8e6631f087dd4be391
+      size: 5435
+    - path: tests/test_pipeline.py
+      hash: md5
+      md5: 9bf467150e444a2f1822f5a4602b82ae
+      size: 3140
+    - path: tests/test_schema.py
+      hash: md5
+      md5: 2cbca263961b0e2f1c475ba48774bf9a
+      size: 2125
+    params:
+      configs/params.yaml:
+        pathologies:
+        - Atelectasis
+        - Cardiomegaly
+        - Consolidation
+        - Edema
+        - Effusion
+        - Emphysema
+        - Fibrosis
+        - Hernia
+        - Infiltration
+        - Mass
+        - Nodule
+        - Pleural_Thickening
+        - Pneumonia
+        - Pneumothorax
+        validation:
+          max_age: 110
+          split_ratios:
+          - 70
+          - 85
+    outs:
+    - path: reports/quality_metrics.json
+      hash: md5
+      md5: 97a2e4625a6d4eef54a45fd180adc7e4
+      size: 123

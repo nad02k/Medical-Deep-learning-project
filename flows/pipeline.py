@@ -29,6 +29,7 @@ def _fresh_staging() -> Path:
 def _report(name: str, run_id: str, payload: dict) -> None:
     config.REPORTS.mkdir(exist_ok=True)
     (config.REPORTS / f"{name}_{run_id}.json").write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    (config.REPORTS / f"{name}_latest.json").write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
 
 @flow(name="ingest-nih", log_prints=True)

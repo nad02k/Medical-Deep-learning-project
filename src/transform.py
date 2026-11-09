@@ -82,7 +82,7 @@ def load_metadata(csv_path: Path) -> pd.DataFrame:
 
 
 def parse_age(s: pd.Series) -> pd.Series:
-    a = pd.to_numeric(s.astype(str).str.extract(r"(\d+)")[0], errors="coerce")  # gère "058Y"
+    a = pd.to_numeric(s.astype(str).str.extract(r"(-?\d+)")[0], errors="coerce")  # gère "058Y" et signale les négatifs
     return a.where((a >= 0) & (a <= config.MAX_AGE))
 
 

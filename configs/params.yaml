@@ -1,0 +1,86 @@
+# =============================================================================
+# params.yaml – Central configuration for the medimodal DataOps pipeline
+# =============================================================================
+# All hardcoded values from src/ are externalized here so they can be
+# tracked by DVC, overridden per environment, and audited in version control.
+# Secrets (DB passwords, API keys) stay in .env – this file is committed.
+# =============================================================================
+
+# ── Data directories (relative to project root) ─────────────────────────────
+data:
+  raw_dir: data/raw
+  staging_dir: data/staging
+  processed_dir: data/processed
+  reports_dir: reports
+
+# ── Validation thresholds ────────────────────────────────────────────────────
+validation:
+  max_age: 110                # NIH contains aberrant ages (e.g. 414)
+  split_ratios: [70, 85]      # <70 → train, <85 → val, else → test
+
+# ── Pathology labels (shared across NIH + Pneumonia) ─────────────────────────
+pathologies:
+  - Atelectasis
+  - Cardiomegaly
+  - Consolidation
+  - Edema
+  - Effusion
+  - Emphysema
+  - Fibrosis
+  - Hernia
+  - Infiltration
+  - Mass
+  - Nodule
+  - Pleural_Thickening
+  - Pneumonia
+  - Pneumothorax
+
+# ── Data sources ─────────────────────────────────────────────────────────────
+sources:
+  kaggle:
+    nih_sample: "nih-chest-xrays/sample"
+    nih_full: "nih-chest-xrays/data"
+    pneumonia: "paultimothymooney/chest-xray-pneumonia"
+  mimic:
+    base_url: "https://physionet.org/files/mimic-iv-demo/2.2/"
+    files:
+      - hosp/patients.csv.gz
+      - hosp/admissions.csv.gz
+      - hosp/diagnoses_icd.csv.gz
+      - hosp/d_icd_diagnoses.csv.gz
+      - hosp/labevents.csv.gz
+      - hosp/d_labitems.csv.gz
+
+# ── Storage backend ─────────────────────────────────────────────────────────
+storage:
+  backend: postgres            # postgres | local
+  batch_size: 50
+
+# ── Collect stage settings ───────────────────────────────────────────────────
+collect:
+  kaggle_text_retries: 6
+  kaggle_file_retries: 12
+
+# ── Pipeline-level settings ──────────────────────────────────────────────────
+pipeline:
+  random_seed: 42
+  sample_size: 100             # for CI / quick smoke tests
+
+# ── Multimodal fusion model ─────────────────────────────────────────────────
+fusion:
+  strategy: intermediate_cross_attention  # early | late | intermediate_cross_attention
+  image_encoder: resnet50_pretrained
+  ehr_encoder: transformer
+  projection_dim: 256
+  num_heads: 8
+  dropout: 0.1
+  learning_rate: 0.0001
+  batch_size: 32
+  epochs: 50
+  loss: bce_with_logits
+  aux_loss_weight: 0.3
+
+# ── MLflow experiment tracking ───────────────────────────────────────────────
+mlflow:
+  tracking_uri: "mlruns"
+  experiment_name: "medimodal_fusion"

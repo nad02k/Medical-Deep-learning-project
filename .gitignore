@@ -1,5 +1,13 @@
 .env
 .venv/
 data/
-reports/
+reports/*.json
+!reports/*.md
 __pycache__/
+*.pyc
+.dvc/cache/
+.dvc/tmp/
+mlruns/
+.pytest_cache/
+htmlcov/
+*.log

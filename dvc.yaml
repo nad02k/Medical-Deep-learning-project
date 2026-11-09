@@ -1,0 +1,154 @@
+# =============================================================================
+# dvc.yaml – Reproducible DataOps pipeline for the medimodal project
+# =============================================================================
+# Run the full pipeline:  dvc repro
+# Run one stage:          dvc repro ingest-nih
+# Visualise the DAG:      dvc dag
+# =============================================================================
+
+stages:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 1a: Ingest NIH ChestX-ray14
+  # ────────────────────────────────────────────────────────────────────────────
+  ingest-nih:
+    cmd: python run.py nih
+    deps:
+      - src/collect.py
+      - src/transform.py
+      - src/validate.py
+      - src/anonymize.py
+      - src/config.py
+      - src/db.py
+      - src/storage.py
+      - flows/pipeline.py
+      - configs/params.yaml
+      - sql/schema.sql
+    params:
+      - configs/params.yaml:
+          - data
+          - validation
+          - pathologies
+          - sources.kaggle
+          - storage
+          - collect
+    outs:
+      - reports/nih_latest.json:
+          cache: false
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 1b: Ingest Kaggle Chest X-Ray Pneumonia
+  # ────────────────────────────────────────────────────────────────────────────
+  ingest-pneumonia:
+    cmd: python run.py pneumonia
+    deps:
+      - src/collect.py
+      - src/pneumonia.py
+      - src/validate.py
+      - src/anonymize.py
+      - src/config.py
+      - src/db.py
+      - src/storage.py
+      - flows/pipeline.py
+      - configs/params.yaml
+      - sql/schema.sql
+    params:
+      - configs/params.yaml:
+          - data
+          - validation
+          - pathologies
+          - sources.kaggle
+          - storage
+          - collect
+    outs:
+      - reports/pneumonia_latest.json:
+          cache: false
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 1c: Ingest MIMIC-IV Demo (EHR tabular data, 100 patients)
+  # ────────────────────────────────────────────────────────────────────────────
+  ingest-mimic:
+    cmd: python run.py mimic
+    deps:
+      - src/collect.py
+      - src/mimic_demo.py
+      - src/validate.py
+      - src/anonymize.py
+      - src/config.py
+      - src/db.py
+      - flows/pipeline.py
+      - configs/params.yaml
+      - sql/schema.sql
+    params:
+      - configs/params.yaml:
+          - data
+          - validation
+          - sources.mimic
+          - collect
+    outs:
+      - reports/mimic_demo_latest.json:
+          cache: false
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 2: Data quality gate (Pandera schemas + pytest data-quality tests)
+  # ────────────────────────────────────────────────────────────────────────────
+  validate-quality:
+    cmd: python run_tests.py
+    deps:
+      - tests/test_data_quality.py
+      - tests/test_schema.py
+      - tests/test_pipeline.py
+      - src/validate.py
+      - src/transform.py
+      - src/config.py
+      - configs/params.yaml
+    params:
+      - configs/params.yaml:
+          - validation
+          - pathologies
+    metrics:
+      - reports/quality_metrics.json:
+          cache: false
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 3: Post-ingestion integrity checks (Database checks)
+  # ────────────────────────────────────────────────────────────────────────────
+  post-checks:
+    cmd: python run.py check
+    deps:
+      - src/db.py
+      - src/config.py
+      - configs/params.yaml
+    params:
+      - configs/params.yaml:
+          - storage
+    metrics:
+      - reports/checks_latest.json:
+          cache: false
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 4: Align modalities (Tâche suivante – appariement multimodal)
+  # ────────────────────────────────────────────────────────────────────────────
+  # align-modalities:
+  #   cmd: python -m src.alignment.align
+  #   deps:
+  #     - src/alignment/
+  #     - configs/params.yaml
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 5: Multimodal fusion model training (Tâche suivante)
+  # ────────────────────────────────────────────────────────────────────────────
+  # train:
+  #   cmd: python -m src.fusion.train
+  #   deps:
+  #     - src/fusion/
+  #     - configs/params.yaml
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stage 6: Model evaluation (Tâche suivante)
+  # ────────────────────────────────────────────────────────────────────────────
+  # evaluate:
+  #   cmd: python -m src.fusion.evaluate
+  #   deps:
+  #     - src/fusion/
+  #     - configs/params.yaml

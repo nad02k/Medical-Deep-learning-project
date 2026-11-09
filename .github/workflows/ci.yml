@@ -1,0 +1,59 @@
+name: CI – Medical Multimodal Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Python setup ──────────────────────────────────────────
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # ── 3. Dependencies ─────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ── 4. Lint with flake8 ──────────────────────────────────────
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 src/ tests/ \
+            --max-line-length=120 \
+            --ignore=E501,W503,E203 \
+            --count --show-source --statistics
+
+      # ── 5. Unit tests (skip integration / DB tests) ─────────────
+      - name: Run unit tests
+        run: |
+          pytest tests/ -m "unit and not integration and not slow" \
+            --tb=short -q --junitxml=reports/junit.xml
+
+      # ── 6. Pipeline smoke-test (optional – needs DB) ────────────
+      - name: Run pipeline on sample data
+        continue-on-error: true
+        run: |
+          python -m src.pipeline --sample --dry-run || echo "Pipeline smoke-test skipped (requires DB)"
+
+# ── Pytest markers (also declare in pyproject.toml / pytest.ini) ──
+# markers:
+#   unit:        fast, self-contained tests (no DB, no network)
+#   integration: tests that touch the database or external services
+#   slow:        tests taking > 30 s
