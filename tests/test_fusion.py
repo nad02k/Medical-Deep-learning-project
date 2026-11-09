@@ -12,7 +12,7 @@ import numpy as np
 
 def test_fusion_tensor_dimensions_logic():
     """Vérifie mathématiquement et structurellement le dimensionnement des tenseurs pour la fusion.
-    
+
     Dimensions théoriques :
     - Image d'entrée : (B, 1, 224, 224)
     - Tokens spatiaux Image (ResNet-50 layer4 stride 32) : 224/32 = 7 -> 7x7 = 49 tokens -> (B, 49, d)
@@ -77,4 +77,5 @@ def test_pytorch_fusion_forward_if_available():
         assert out_missing["logits"].shape == (batch_size, 14)
 
     except ImportError:
-        pytest.skip("PyTorch non installé dans cet environnement - test d'architecture ignoré")
+        pytest.skip(
+            "PyTorch non installé dans cet environnement - test d'architecture ignoré")

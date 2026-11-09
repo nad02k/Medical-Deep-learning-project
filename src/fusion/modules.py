@@ -77,7 +77,8 @@ class ImageEncoder(nn.Module):
         weights = models.ResNet50_Weights.DEFAULT if pretrained else None
         resnet = models.resnet50(weights=weights)
 
-        # Replace first conv: 3-channel → 1-channel (average pretrained weights).
+        # Replace first conv: 3-channel → 1-channel (average pretrained
+        # weights).
         original_conv = resnet.conv1
         self.input_conv = nn.Conv2d(
             1,
@@ -171,7 +172,8 @@ class EHREncoder(nn.Module):
         self.feature_embed = nn.Linear(1, d)
 
         # Learnable positional encoding (one per feature slot).
-        self.pos_encoding = nn.Parameter(torch.randn(1, num_features, d) * 0.02)
+        self.pos_encoding = nn.Parameter(
+            torch.randn(1, num_features, d) * 0.02)
 
         # Transformer encoder.
         encoder_layer = nn.TransformerEncoderLayer(

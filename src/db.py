@@ -13,7 +13,11 @@ def engine():
 
 
 def _apply_schema(c):
-    ddl = re.sub(r"--[^\n]*", "", config.SCHEMA_SQL.read_text(encoding="utf-8"))
+    ddl = re.sub(
+        r"--[^\n]*",
+        "",
+        config.SCHEMA_SQL.read_text(
+            encoding="utf-8"))
     for stmt in ddl.split(";"):
         if stmt.strip():
             c.execute(text(stmt))
@@ -32,18 +36,38 @@ def load(source: str, tables: dict, run_id: str, audit: dict) -> None:
     p = {"s": source}
     with engine().begin() as c:
         _apply_schema(c)
-        c.execute(text("DELETE FROM image_blobs WHERE image_id IN (SELECT image_id FROM images WHERE source=:s)"), p)
-        c.execute(text("DELETE FROM labels WHERE image_id IN (SELECT image_id FROM images WHERE source=:s)"), p)
-        c.execute(text("DELETE FROM clinical_features WHERE image_id IN (SELECT image_id FROM images WHERE source=:s)"), p)
+        c.execute(
+            text("DELETE FROM image_blobs WHERE image_id IN (SELECT image_id FROM images WHERE source=:s)"),
+            p)
+        c.execute(
+            text(
+                "DELETE FROM labels WHERE image_id IN (SELECT image_id FROM images WHERE source=:s)"),
+            p)
+        c.execute(
+            text("DELETE FROM clinical_features WHERE image_id IN (SELECT image_id FROM images WHERE source=:s)"),
+            p)
         c.execute(text("DELETE FROM images WHERE source=:s"), p)
-        c.execute(text("DELETE FROM splits WHERE patient_pseudo_id IN (SELECT patient_pseudo_id FROM patients WHERE source=:s)"), p)
+        c.execute(
+            text("DELETE FROM splits WHERE patient_pseudo_id IN (SELECT patient_pseudo_id FROM patients WHERE source=:s)"),
+            p)
         c.execute(text("DELETE FROM patients WHERE source=:s"), p)
-        for name in ("patients", "images", "clinical_features", "labels", "splits"):
-            tables[name].to_sql(name, c, if_exists="append", index=False, method="multi", chunksize=2000)
+        for name in ("patients", "images",
+                     "clinical_features", "labels", "splits"):
+            tables[name].to_sql(
+                name,
+                c,
+                if_exists="append",
+                index=False,
+                method="multi",
+                chunksize=2000)
         _write_audit(c, run_id, ts, source, audit)
 
 
-EHR_ORDER = ["ehr_patients", "ehr_admissions", "ehr_diagnoses", "ehr_labevents"]
+EHR_ORDER = [
+    "ehr_patients",
+    "ehr_admissions",
+    "ehr_diagnoses",
+    "ehr_labevents"]
 
 
 def load_ehr(tables: dict, run_id: str, audit: dict) -> None:
@@ -53,7 +77,13 @@ def load_ehr(tables: dict, run_id: str, audit: dict) -> None:
         for t in reversed(EHR_ORDER):
             c.execute(text(f"DELETE FROM {t}"))
         for t in EHR_ORDER:
-            tables[t].to_sql(t, c, if_exists="append", index=False, method="multi", chunksize=2000)
+            tables[t].to_sql(
+                t,
+                c,
+                if_exists="append",
+                index=False,
+                method="multi",
+                chunksize=2000)
         _write_audit(c, run_id, ts, "mimic_iv_demo", audit)
 
 
@@ -73,7 +103,13 @@ def post_checks() -> dict:
             "SELECT i.source, COUNT(*) AS n_images, COUNT(DISTINCT i.patient_pseudo_id) AS n_patients, "
             "ROUND(100.0*SUM(CASE WHEN c.age_years IS NULL THEN 1 ELSE 0 END)/COUNT(*),2) AS age_null_pct "
             "FROM images i JOIN clinical_features c USING(image_id) GROUP BY i.source")).mappings().all()
-        out["per_source"] = {r["source"]: {k: float(r[k]) for k in ("n_images", "n_patients", "age_null_pct")} for r in rows}
+        out["per_source"] = {
+            r["source"]: {
+                k: float(
+                    r[k]) for k in (
+                    "n_images",
+                    "n_patients",
+                    "age_null_pct")} for r in rows}
     bad = [k for k in q if out[k]]
     out["ok"], out["failed_checks"] = not bad, bad
     return out

@@ -341,7 +341,8 @@ def create_multimodal_dataset(
     pairs = aligned["aligned_pairs"]
     if not pairs:
         logger.warning("No aligned pairs — returning empty splits.")
-        return {"train": pd.DataFrame(), "val": pd.DataFrame(), "test": pd.DataFrame()}
+        return {"train": pd.DataFrame(), "val": pd.DataFrame(),
+                "test": pd.DataFrame()}
 
     # Flatten aligned pairs into a single DataFrame.
     rows: List[Dict[str, Any]] = []

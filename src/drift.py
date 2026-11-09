@@ -4,6 +4,9 @@ Compare les distributions statistiques entre les ensembles train et test/val
 ou entre deux versions successives des données pour détecter des dérives
 (covariate shift) sur l'âge, le sexe, la prévalence des pathologies et les analyses biologiques.
 """
+from src import config
+import pandas as pd
+import numpy as np
 import json
 import math
 import sys
@@ -14,15 +17,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import numpy as np
-import pandas as pd
 
-from src import config
-
-
-def compute_psi(expected: np.ndarray, actual: np.ndarray, num_buckets: int = 10) -> float:
+def compute_psi(expected: np.ndarray, actual: np.ndarray,
+                num_buckets: int = 10) -> float:
     """Calcule le Population Stability Index (PSI) entre deux distributions continues.
-    
+
     Interprétation standard :
     - PSI < 0.1 : Pas de dérive significative (stable)
     - 0.1 <= PSI < 0.2 : Dérive modérée
@@ -44,18 +43,21 @@ def compute_psi(expected: np.ndarray, actual: np.ndarray, num_buckets: int = 10)
     expected_pct = np.clip(expected_counts / len(expected), 1e-4, 1.0)
     actual_pct = np.clip(actual_counts / len(actual), 1e-4, 1.0)
 
-    psi = np.sum((actual_pct - expected_pct) * np.log(actual_pct / expected_pct))
+    psi = np.sum((actual_pct - expected_pct) *
+                 np.log(actual_pct / expected_pct))
     return float(round(psi, 4))
 
 
-def compute_categorical_tvd(expected_counts: Dict[str, int], actual_counts: Dict[str, int]) -> float:
+def compute_categorical_tvd(
+        expected_counts: Dict[str, int], actual_counts: Dict[str, int]) -> float:
     """Calcule la Total Variation Distance (TVD) pour des variables catégorielles (ex. sexe, pathologies)."""
     keys = set(expected_counts.keys()).union(set(actual_counts.keys()))
     tot_exp = sum(expected_counts.values()) or 1
     tot_act = sum(actual_counts.values()) or 1
 
     tvd = 0.5 * sum(
-        abs((expected_counts.get(k, 0) / tot_exp) - (actual_counts.get(k, 0) / tot_act))
+        abs((expected_counts.get(k, 0) / tot_exp) -
+            (actual_counts.get(k, 0) / tot_act))
         for k in keys
     )
     return float(round(tvd, 4))
@@ -69,7 +71,8 @@ def run_drift_analysis(db_engine=None) -> Dict[str, Any]:
         "summary": [],
     }
 
-    # Simulation réaliste basée sur les distributions connues ou interrogation DB si disponible
+    # Simulation réaliste basée sur les distributions connues ou interrogation
+    # DB si disponible
     try:
         from src import db
         eng = db_engine or db.engine()
@@ -82,11 +85,14 @@ def run_drift_analysis(db_engine=None) -> Dict[str, Any]:
                 "JOIN splits s USING(patient_pseudo_id)",
                 conn
             )
-            train_ages = df[df["split"] == "train"]["age_years"].dropna().values
+            train_ages = df[df["split"] ==
+                            "train"]["age_years"].dropna().values
             test_ages = df[df["split"] == "test"]["age_years"].dropna().values
 
-            train_sex = df[df["split"] == "train"]["sex"].value_counts().to_dict()
-            test_sex = df[df["split"] == "test"]["sex"].value_counts().to_dict()
+            train_sex = df[df["split"] ==
+                           "train"]["sex"].value_counts().to_dict()
+            test_sex = df[df["split"] ==
+                          "test"]["sex"].value_counts().to_dict()
     except Exception:
         # Fallback analytique déterministe si la DB n'est pas connectée
         np.random.seed(42)
@@ -118,8 +124,12 @@ def run_drift_analysis(db_engine=None) -> Dict[str, Any]:
     }
 
     report["drift_detected"] = age_drift or sex_drift
-    report["summary"].append(f"Âge : PSI = {age_psi} ({'Dérive' if age_drift else 'Aligné'})")
-    report["summary"].append(f"Sexe : TVD = {sex_tvd} ({'Dérive' if sex_drift else 'Aligné'})")
+    report["summary"].append(
+        f"Âge : PSI = {age_psi} ({
+            'Dérive' if age_drift else 'Aligné'})")
+    report["summary"].append(
+        f"Sexe : TVD = {sex_tvd} ({
+            'Dérive' if sex_drift else 'Aligné'})")
 
     # Sauvegarde du rapport
     out_file = config.REPORTS / "drift_report.json"

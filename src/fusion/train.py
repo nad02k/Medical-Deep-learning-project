@@ -5,6 +5,7 @@ Anticipation des Tâches 4 & 5 conformément à l'exigence A.2.8 :
 - Enregistrement des hyperparamètres depuis configs/params.yaml
 - Sauvegarde des checkpoints du modèle
 """
+from src import config
 import json
 import os
 import sys
@@ -15,17 +16,22 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config
 
-
-def train_multimodal_model(epochs: int = None, lr: float = None, use_mlflow: bool = True):
+def train_multimodal_model(
+        epochs: int = None, lr: float = None, use_mlflow: bool = True):
     fusion_cfg = config.PARAMS.get("fusion", {})
     mlflow_cfg = config.PARAMS.get("mlflow", {})
     epochs = epochs or fusion_cfg.get("epochs", 5)
     lr = lr or fusion_cfg.get("learning_rate", 1e-4)
 
-    print(f"🧬 [Training] Démarrage de l'entraînement multimodal (Stratégie: {fusion_cfg.get('strategy')})...")
-    print(f"📊 Hyperparamètres : epochs={epochs}, lr={lr}, d={fusion_cfg.get('projection_dim', 256)}")
+    print(
+        f"🧬 [Training] Démarrage de l'entraînement multimodal (Stratégie: {
+            fusion_cfg.get('strategy')})...")
+    print(
+        f"📊 Hyperparamètres : epochs={epochs}, lr={lr}, d={
+            fusion_cfg.get(
+                'projection_dim',
+                256)}")
 
     # Vérification de la disponibilité de MLflow
     mlflow_available = False
@@ -34,7 +40,10 @@ def train_multimodal_model(epochs: int = None, lr: float = None, use_mlflow: boo
             import mlflow
             tracking_uri = mlflow_cfg.get("tracking_uri", "mlruns")
             mlflow.set_tracking_uri(str(ROOT / tracking_uri))
-            mlflow.set_experiment(mlflow_cfg.get("experiment_name", "medimodal_fusion"))
+            mlflow.set_experiment(
+                mlflow_cfg.get(
+                    "experiment_name",
+                    "medimodal_fusion"))
             mlflow_available = True
             print(f"📡 MLflow connecté : tracking_uri='{tracking_uri}'")
         except ImportError:
@@ -55,12 +64,16 @@ def train_multimodal_model(epochs: int = None, lr: float = None, use_mlflow: boo
             "train_loss": train_loss,
             "val_auroc": val_auroc,
         })
-        print(f"  Epoch {epoch}/{epochs} | Train Loss: {train_loss:.4f} | Val AUROC: {val_auroc:.4f}")
+        print(
+            f"  Epoch {epoch}/{epochs} | Train Loss: {
+                train_loss:.4f} | Val AUROC: {
+                val_auroc:.4f}")
 
         if mlflow_available:
             try:
                 import mlflow
-                mlflow.log_metrics({"train_loss": train_loss, "val_auroc": val_auroc}, step=epoch)
+                mlflow.log_metrics(
+                    {"train_loss": train_loss, "val_auroc": val_auroc}, step=epoch)
             except Exception:
                 pass
 
@@ -77,7 +90,9 @@ def train_multimodal_model(epochs: int = None, lr: float = None, use_mlflow: boo
         "history": history,
     }
     report_file.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    print(f"✅ Entraînement terminé. Meilleur AUROC: {best_auroc:.4f}. Métriques enregistrées dans : {report_file}")
+    print(
+        f"✅ Entraînement terminé. Meilleur AUROC: {
+            best_auroc:.4f}. Métriques enregistrées dans : {report_file}")
     return result
 
 

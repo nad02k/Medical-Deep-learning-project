@@ -3,6 +3,7 @@
 Synthétise l'ensemble des validations Pandera, contrôles d'intégrité référentielle,
 statistiques de déduplication et détection de dérive dans une page web standalone.
 """
+from src import config
 import json
 import sys
 from datetime import datetime, timezone
@@ -11,8 +12,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-from src import config
 
 
 def generate_html_quality_report() -> Path:
@@ -26,7 +25,8 @@ def generate_html_quality_report() -> Path:
         if files:
             latest = max(files, key=lambda p: p.stat().st_mtime)
             try:
-                reports[prefix] = json.loads(latest.read_text(encoding="utf-8"))
+                reports[prefix] = json.loads(
+                    latest.read_text(encoding="utf-8"))
             except Exception:
                 reports[prefix] = {}
 

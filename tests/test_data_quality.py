@@ -41,7 +41,9 @@ class TestDataQualityNIH:
         conflict_df = sample_nih_meta.copy()
         # patient 1 a 2 lignes, mettons M sur l'une et F sur l'autre
         conflict_df.loc[1, "sex"] = "F"
-        report = validate_nih(conflict_df, set(conflict_df["image_name"]), strict=False)
+        report = validate_nih(
+            conflict_df, set(
+                conflict_df["image_name"]), strict=False)
         assert report["patients_with_sex_conflict"] == 1
         assert any("sexe contradictoire" in c for c in report["critical"])
 
@@ -56,12 +58,14 @@ class TestDataLeakageAndSplits:
         records = []
         for p in patient_ids:
             for img_idx in range(3):
-                records.append({"image_id": f"IMG_{p}_{img_idx}", "patient_id": p, "split": splits[p]})
+                records.append({"image_id": f"IMG_{p}_{img_idx}",
+                               "patient_id": p, "split": splits[p]})
         df = pd.DataFrame(records)
 
         # Vérifier pour chaque patient que le split est unique (0 fuite)
         splits_per_patient = df.groupby("patient_id")["split"].nunique()
-        assert (splits_per_patient == 1).all(), "Fuite détectée : un patient a plusieurs splits !"
+        assert (splits_per_patient == 1).all(
+        ), "Fuite détectée : un patient a plusieurs splits !"
 
     def test_split_determinism(self):
         """Vérifie la reproductibilité stricte : un même patient a toujours le même split."""
@@ -84,7 +88,8 @@ class TestDataLeakageAndSplits:
 
 
 class TestInterModalityCoherence:
-    def test_ehr_orphan_labs_detected(self, sample_ehr_patients, sample_ehr_labs):
+    def test_ehr_orphan_labs_detected(
+            self, sample_ehr_patients, sample_ehr_labs):
         """Vérifie que les examens de laboratoire sans patient correspondant sont détectés."""
         # Ajout d'un lab avec un subject_id inexistant
         corrupt_labs = sample_ehr_labs.copy()

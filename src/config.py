@@ -15,15 +15,20 @@ else:
     PARAMS = {}
 
 # Répertoires
-RAW = ROOT / os.getenv("RAW_DIR", PARAMS.get("data", {}).get("raw_dir", "data/raw"))
+RAW = ROOT / os.getenv("RAW_DIR", PARAMS.get("data",
+                       {}).get("raw_dir", "data/raw"))
 STAGING = ROOT / PARAMS.get("data", {}).get("staging_dir", "data/staging")
 REPORTS = ROOT / PARAMS.get("data", {}).get("reports_dir", "reports")
 SCHEMA_SQL = ROOT / "sql" / "schema.sql"
 
 # Base de données PostgreSQL
 DB_URL = (
-    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
-    f"@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB')}"
+    f"postgresql+psycopg2://{
+        os.getenv('POSTGRES_USER')}:{
+        os.getenv('POSTGRES_PASSWORD')}"
+    f"@{os.getenv('POSTGRES_HOST',
+                  'localhost')}:{os.getenv('POSTGRES_PORT',
+                                           '5432')}/{os.getenv('POSTGRES_DB')}"
 )
 
 # MinIO / S3 config (pour compatibilité)
@@ -33,7 +38,13 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "chestxray")
 
 # Stockage et lots
-STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", PARAMS.get("storage", {}).get("backend", "postgres"))
+STORAGE_BACKEND = os.getenv(
+    "STORAGE_BACKEND",
+    PARAMS.get(
+        "storage",
+        {}).get(
+            "backend",
+        "postgres"))
 BATCH_SIZE = PARAMS.get("storage", {}).get("batch_size", 50)
 
 # Pseudonymisation
@@ -41,7 +52,11 @@ PSEUDO_SECRET = os.getenv("PSEUDO_SECRET", "")
 
 # Règles métier & validation (externalisées depuis params.yaml)
 MAX_AGE = PARAMS.get("validation", {}).get("max_age", 110)
-SPLIT_RATIOS = tuple(PARAMS.get("validation", {}).get("split_ratios", [70, 85]))
+SPLIT_RATIOS = tuple(
+    PARAMS.get(
+        "validation", {}).get(
+            "split_ratios", [
+                70, 85]))
 
 PATHOLOGIES = PARAMS.get("pathologies", [
     "Atelectasis", "Cardiomegaly", "Consolidation", "Edema", "Effusion",

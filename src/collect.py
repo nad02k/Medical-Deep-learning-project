@@ -29,7 +29,8 @@ def sha256_file(p: Path, chunk=1 << 20) -> str:
 
 
 def write_manifest(folder: Path, source: str) -> Path:
-    files = [p for p in sorted(folder.rglob("*")) if p.is_file() and p.name != "MANIFEST.json"]
+    files = [p for p in sorted(folder.rglob("*"))
+             if p.is_file() and p.name != "MANIFEST.json"]
     manifest = {
         "source": source,
         "downloaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -65,14 +66,16 @@ def _get_text(url: str, attempts: int = 6) -> str:
     import requests
     for i in range(attempts):
         try:
-            return requests.get(url, timeout=(15, 60), headers={"Accept-Encoding": "identity"}).text
+            return requests.get(url, timeout=(15, 60), headers={
+                                "Accept-Encoding": "identity"}).text
         except requests.RequestException as e:
             print(f"  réessai {i + 1}/{attempts} ({type(e).__name__})")
             time.sleep(min(2 ** i, 30))
     raise RuntimeError(f"Impossible de télécharger {url}")
 
 
-def _download_file(url: str, out: Path, expected_sha: str, attempts: int = 12) -> None:
+def _download_file(url: str, out: Path, expected_sha: str,
+                   attempts: int = 12) -> None:
     """Téléchargement avec REPRISE (en-tête Range) : une coupure ne fait pas repartir de zéro.
     Le fichier n'est publié que si son SHA-256 correspond à la liste officielle."""
     import requests
@@ -103,9 +106,14 @@ def _download_file(url: str, out: Path, expected_sha: str, attempts: int = 12) -
             tmp.replace(out)
             print(f"  {out.name} OK")
             return
-        tmp.unlink(missing_ok=True)                # contenu invalide : on repart de zéro
-        print(f"  {out.name}: checksum invalide, nouvelle tentative [{i + 1}/{attempts}]")
-    raise RuntimeError(f"Échec du téléchargement de {url} après {attempts} tentatives")
+        # contenu invalide : on repart de zéro
+        tmp.unlink(missing_ok=True)
+        print(
+            f"  {
+                out.name}: checksum invalide, nouvelle tentative [{
+                i + 1}/{attempts}]")
+    raise RuntimeError(
+        f"Échec du téléchargement de {url} après {attempts} tentatives")
 
 
 def download_mimic_demo() -> Path:
@@ -117,7 +125,8 @@ def download_mimic_demo() -> Path:
         out.parent.mkdir(parents=True, exist_ok=True)
         expected = sums.get(rel)
         if expected is None:
-            raise RuntimeError(f"{rel} absent de SHA256SUMS.txt : intégrité non vérifiable")
+            raise RuntimeError(
+                f"{rel} absent de SHA256SUMS.txt : intégrité non vérifiable")
         _download_file(MIMIC_DEMO_BASE + rel, out, expected)
     write_manifest(dest, "mimic_iv_demo")
     return dest

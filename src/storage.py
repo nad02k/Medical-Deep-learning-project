@@ -43,7 +43,9 @@ def upload_images(staging: Path, object_keys: list) -> int:
 def fetch_image_bytes(image_id: str, engine=None) -> bytes:
     eng = engine or db.engine()
     with eng.connect() as c:
-        row = c.execute(text("SELECT content FROM image_blobs WHERE image_id=:i"), {"i": image_id}).first()
+        row = c.execute(
+            text("SELECT content FROM image_blobs WHERE image_id=:i"), {
+                "i": image_id}).first()
     if row is None:
         raise KeyError(f"Image introuvable : {image_id}")
     return bytes(row[0])
@@ -51,4 +53,5 @@ def fetch_image_bytes(image_id: str, engine=None) -> bytes:
 
 def fetch_image(image_id: str, engine=None) -> Image.Image:
     """Retourne une image PIL en niveaux de gris."""
-    return Image.open(io.BytesIO(fetch_image_bytes(image_id, engine))).convert("L")
+    return Image.open(io.BytesIO(
+        fetch_image_bytes(image_id, engine))).convert("L")

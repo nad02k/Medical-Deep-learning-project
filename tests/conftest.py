@@ -7,7 +7,10 @@ import pandas as pd
 import numpy as np
 
 # S'assurer que le secret de pseudonymisation est disponible pour les tests
-os.environ["PSEUDO_SECRET"] = os.getenv("PSEUDO_SECRET", "test_secret_key_32_characters_long_for_hmac")
+os.environ["PSEUDO_SECRET"] = os.getenv(
+    "PSEUDO_SECRET",
+    "test_secret_key_32_characters_long_for_hmac")
+
 
 @pytest.fixture
 def tmp_staging(tmp_path: Path) -> Path:
@@ -15,6 +18,7 @@ def tmp_staging(tmp_path: Path) -> Path:
     staging.mkdir(parents=True, exist_ok=True)
     yield staging
     shutil.rmtree(staging, ignore_errors=True)
+
 
 @pytest.fixture
 def sample_nih_meta() -> pd.DataFrame:
@@ -29,6 +33,7 @@ def sample_nih_meta() -> pd.DataFrame:
         "finding_labels": ["Infiltration|Pneumonia", "Atelectasis", "No Finding"],
     })
 
+
 @pytest.fixture
 def sample_pneumonia_meta() -> pd.DataFrame:
     """Échantillon synthétique conforme au schéma Kaggle Pneumonia."""
@@ -41,6 +46,7 @@ def sample_pneumonia_meta() -> pd.DataFrame:
         "key_inferred": [True, True],
     })
 
+
 @pytest.fixture
 def sample_ehr_patients() -> pd.DataFrame:
     """Échantillon synthétique conforme au schéma EHR patients."""
@@ -51,6 +57,7 @@ def sample_ehr_patients() -> pd.DataFrame:
         "anchor_year_group": ["2014 - 2016", "2017 - 2019", "2008 - 2010"],
         "dod": [None, None, "2115-05-12"],
     })
+
 
 @pytest.fixture
 def sample_ehr_labs() -> pd.DataFrame:

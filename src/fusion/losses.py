@@ -145,7 +145,8 @@ class MultimodalLoss(nn.Module):
     def _smooth_labels(self, y: torch.Tensor) -> torch.Tensor:
         """Apply label smoothing to binary targets."""
         if self.label_smoothing > 0.0:
-            return y * (1.0 - self.label_smoothing) + 0.5 * self.label_smoothing
+            return y * (1.0 - self.label_smoothing) + \
+                0.5 * self.label_smoothing
         return y
 
     def forward(

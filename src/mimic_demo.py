@@ -34,7 +34,12 @@ def load_raw(raw_dir: Path) -> dict:
 
 def _pseudo(series: pd.Series, kind: str, prefix: str) -> pd.Series:
     s = series.astype("float64")
-    mapping = {u: pseudo_id(f"{SOURCE}:{kind}:{int(u)}", config.PSEUDO_SECRET, prefix) for u in s.dropna().unique()}
+    mapping = {
+        u: pseudo_id(
+            f"{SOURCE}:{kind}:{
+                int(u)}",
+            config.PSEUDO_SECRET,
+            prefix) for u in s.dropna().unique()}
     return s.map(mapping).astype(object).where(s.notna(), None)
 
 
@@ -60,12 +65,14 @@ def prepare(raw: dict):
     dx = dx[dx["hadm_id"].isin(adm["hadm_id"])].copy()
     dx["hadm_pseudo_id"] = _pseudo(dx["hadm_id"], "hadm", "H")
     dx["patient_pseudo_id"] = _pseudo(dx["subject_id"], "subject", "S")
-    ehr_dx = dx[["hadm_pseudo_id", "patient_pseudo_id", "seq_num", "icd_code", "icd_version", "long_title"]]
+    ehr_dx = dx[["hadm_pseudo_id", "patient_pseudo_id",
+                 "seq_num", "icd_code", "icd_version", "long_title"]]
 
     lab = raw["labevents"].merge(raw["d_labitems"][["itemid", "label", "fluid", "category"]],
                                  on="itemid", how="left")
     lab = lab[lab["subject_id"].isin(pat["subject_id"])].copy()
-    lab["hadm_id"] = lab["hadm_id"].where(lab["hadm_id"].isin(set(adm["hadm_id"])))  # sinon NULL
+    lab["hadm_id"] = lab["hadm_id"].where(
+        lab["hadm_id"].isin(set(adm["hadm_id"])))  # sinon NULL
     lab["patient_pseudo_id"] = _pseudo(lab["subject_id"], "subject", "S")
     lab["hadm_pseudo_id"] = _pseudo(lab["hadm_id"], "hadm", "H")
     lab = lab.rename(columns={"value": "value_text"})

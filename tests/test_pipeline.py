@@ -41,7 +41,8 @@ def test_validate_pneumonia_leakage_detection():
         "image_name": ["img1.jpeg", "img2.jpeg"],
         "label": ["NORMAL", "PNEUMONIA"],
         "patient_key": ["patient_X", "patient_X"],  # Même patient
-        "orig_split": ["train", "test"],             # Mais deux splits différents Kaggle !
+        # Mais deux splits différents Kaggle !
+        "orig_split": ["train", "test"],
         "key_inferred": [True, True],
     })
     report = validate_pneumonia(meta, strict=False)

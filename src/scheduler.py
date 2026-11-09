@@ -3,6 +3,7 @@
 Permet d'exécuter la collecte à intervalles réguliers (mode daemon ou cron)
 pour surveiller l'arrivée de nouvelles données sur Kaggle ou PhysioNet.
 """
+from flows import pipeline
 import argparse
 import sys
 import time
@@ -12,8 +13,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-from flows import pipeline
 
 
 def run_scheduled_job(source: str = "all"):
@@ -32,8 +31,10 @@ def run_scheduled_job(source: str = "all"):
     print(f"[{datetime.now(timezone.utc).isoformat()}] ✅ Job de collecte planifiée terminé avec succès.")
 
 
-def start_scheduler(interval_hours: float = 24.0, source: str = "all", run_immediately: bool = False):
-    print(f"🚀 Planificateur DataOps actif. Intervalle d'exécution : {interval_hours} heures.")
+def start_scheduler(interval_hours: float = 24.0,
+                    source: str = "all", run_immediately: bool = False):
+    print(
+        f"🚀 Planificateur DataOps actif. Intervalle d'exécution : {interval_hours} heures.")
     if run_immediately:
         run_scheduled_job(source)
 
@@ -47,10 +48,29 @@ def start_scheduler(interval_hours: float = 24.0, source: str = "all", run_immed
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Planificateur de collecte de données DataOps")
-    parser.add_argument("--interval", type=float, default=24.0, help="Intervalle en heures entre chaque collecte")
-    parser.add_argument("--source", type=str, default="all", choices=["nih", "pneumonia", "mimic", "all"])
-    parser.add_argument("--now", action="store_true", help="Exécuter immédiatement au démarrage")
+    parser = argparse.ArgumentParser(
+        description="Planificateur de collecte de données DataOps")
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=24.0,
+        help="Intervalle en heures entre chaque collecte")
+    parser.add_argument(
+        "--source",
+        type=str,
+        default="all",
+        choices=[
+            "nih",
+            "pneumonia",
+            "mimic",
+            "all"])
+    parser.add_argument(
+        "--now",
+        action="store_true",
+        help="Exécuter immédiatement au démarrage")
     args = parser.parse_args()
 
-    start_scheduler(interval_hours=args.interval, source=args.source, run_immediately=args.now)
+    start_scheduler(
+        interval_hours=args.interval,
+        source=args.source,
+        run_immediately=args.now)

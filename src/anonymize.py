@@ -8,8 +8,12 @@ from PIL import Image
 
 def pseudo_id(raw_id, secret: str, prefix: str = "P") -> str:
     if not secret:
-        raise ValueError("PSEUDO_SECRET manquant : refus d'ingérer sans pseudonymisation.")
-    digest = hmac.new(secret.encode(), str(raw_id).encode(), hashlib.sha256).hexdigest()
+        raise ValueError(
+            "PSEUDO_SECRET manquant : refus d'ingérer sans pseudonymisation.")
+    digest = hmac.new(
+        secret.encode(),
+        str(raw_id).encode(),
+        hashlib.sha256).hexdigest()
     return f"{prefix}_{digest[:16]}"
 
 
